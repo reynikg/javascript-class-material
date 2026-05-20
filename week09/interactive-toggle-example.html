@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>ClassList in Action</title>
+    <style>
+        /* Βασικά Στυλ (Light Mode) */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            transition: all 0.4s ease;
+            padding: 40px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        /* 1. Η κλάση για το Dark Mode */
+        body.dark-theme {
+            background-color: #1e272e;
+            color: #d2dae2;
+        }
+
+        /* 2. Στυλ για την Ειδοποίηση (Κρυμμένη από προεπιλογή) */
+        .notification {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e1b12c;
+            color: white;
+            border-radius: 5px;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            visibility: hidden;
+        }
+
+        /* Η κλάση που ΕΜΦΑΝΙΖΕΙ την ειδοποίηση */
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Διαχείριση Εμφάνισης</h1>
+    <p>Δοκιμάστε τα παρακάτω κουμπιά για να δείτε το classList σε λειτουργία.</p>
+
+    <button id="themeToggle">Εναλλαγή Dark Mode</button>
+    <button id="alertBtn">Εμφάνιση Ειδοποίησης</button>
+
+    <div id="infoBox" class="notification">
+        Αυτή είναι μια σημαντική ενημέρωση του συστήματος!
+    </div>
+
+    <script>
+        // Εναλλαγή Dark Mode (Χρήση toggle)
+        let themeBtn = document.querySelector("#themeToggle");
+        let bodyElement = document.querySelector("body");
+
+        themeBtn.addEventListener("click", function() {
+            // Ο διακόπτης toggle προσθαφαιρεί την κλάση dark-theme στο body
+            bodyElement.classList.toggle("dark-theme");
+        });
+
+        // Εμφάνιση/Απόκρυψη Ειδοποίησης
+        let alertBtn = document.querySelector("#alertBtn");
+        let infoBox = document.querySelector("#infoBox");
+
+        alertBtn.addEventListener("click", function() {
+            // Προσθέτουμε την κλάση 'show' για να εμφανιστεί ομαλά
+            infoBox.classList.add("show");
+
+            // Ρυθμίζουμε ένα χρονόμετρο 3 δευτερολέπτων για να την κρύψουμε ξανά
+            setTimeout(function() {
+                infoBox.classList.remove("show");
+            }, 3000); // 3000 milliseconds = 3 δευτερόλεπτα
+        });
+    </script>
+</body>
+</html>
