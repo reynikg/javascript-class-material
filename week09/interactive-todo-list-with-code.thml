@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToDo App — Ζωντανός Κώδικας</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 19px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 20px;
+    }
+
+    h1 code {
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 2px 8px;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    /* ── Layout ── */
+    .lesson-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      max-width: 960px;
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.11);
+      border: 1px solid #dde1e7;
+      min-height: 520px;
+    }
+
+    /* ── Panel headers ── */
+    .panel-header {
+      padding: 10px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      border-bottom: 1px solid #dde1e7;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fafafa;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .d1 { background: #ff5f57; }
+    .d2 { background: #ffbd2e; }
+    .d3 { background: #28c840; }
+
+    /* ── Demo Panel ── */
+    .panel-demo {
+      background: #ffffff;
+      border-right: 1px solid #dde1e7;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .demo-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .demo-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .task-input {
+      flex: 1;
+      padding: 9px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .task-input:focus { border-color: #27ae60; }
+
+    .add-btn {
+      padding: 9px 16px;
+      background: #27ae60;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .add-btn:hover { background: #2ecc71; }
+
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .task-item {
+      background: #ecf0f1;
+      padding: 11px 13px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: fadeIn 0.3s ease;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .task-text { flex: 1; word-break: break-word; }
+
+    .del-btn {
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      margin-left: 10px;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+
+    .del-btn:hover { background: #c0392b; }
+
+    .empty-msg {
+      font-size: 13px;
+      color: #aaa;
+      text-align: center;
+      padding: 24px 0;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Code Panel ── */
+    .panel-code {
+      background: #1a1d23;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header.code-header {
+      background: #13151a;
+      color: #6b7280;
+      border-color: #2a2d35;
+    }
+
+    .code-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 0;
+    }
+
+    pre { margin: 0; }
+
+    .code-line {
+      display: flex;
+      padding: 0;
+      transition: background 0.25s;
+    }
+
+    .hl-bar {
+      width: 3px;
+      min-width: 3px;
+      background: transparent;
+      border-radius: 0 2px 2px 0;
+      transition: background 0.25s;
+    }
+
+    .line-num {
+      color: #3d4251;
+      min-width: 28px;
+      text-align: right;
+      margin-right: 14px;
+      font-size: 11px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      line-height: 1.75;
+      user-select: none;
+      transition: color 0.25s;
+    }
+
+    .line-code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 11.5px;
+      line-height: 1.75;
+      white-space: pre;
+      flex: 1;
+      color: #abb2bf;
+      padding-right: 10px;
+    }
+
+    /* Highlighted (existing task) */
+    .code-line.hl               { background: #1e3448; }
+    .code-line.hl .hl-bar       { background: #4a9eda; }
+    .code-line.hl .line-num     { color: #7ec8f0; }
+    .code-line.hl .line-code    { color: #e8f4fd; }
+
+    /* New task (green) */
+    .code-line.new-add           { background: #0d2a16; animation: flashGreen 0.7s ease; }
+    .code-line.new-add .hl-bar   { background: #27ae60; }
+    .code-line.new-add .line-num { color: #5dce88; }
+    .code-line.new-add .line-code{ color: #a8e6be; }
+
+    /* Deleted task (red) */
+    .code-line.del-line           { background: #2a0d0d; animation: flashRed 0.7s ease; }
+    .code-line.del-line .hl-bar   { background: #e74c3c; }
+    .code-line.del-line .line-num { color: #f08080; }
+    .code-line.del-line .line-code{ color: #f0a0a0; }
+
+    @keyframes flashGreen {
+      0%   { background: #0d4020; }
+      100% { background: #0d2a16; }
+    }
+
+    @keyframes flashRed {
+      0%   { background: #4a0d0d; }
+      100% { background: #2a0d0d; }
+    }
+
+    /* Syntax colors */
+    .kw  { color: #c678dd; }
+    .fn  { color: #61afef; }
+    .str { color: #98c379; }
+    .cm  { color: #5c6370; font-style: italic; }
+    .id  { color: #e06c75; }
+    .pn  { color: #abb2bf; }
+    .at  { color: #d19a66; }
+
+    .code-line.hl .kw  { color: #d4a0e8; }
+    .code-line.hl .fn  { color: #80c4f8; }
+    .code-line.hl .str { color: #b5d8a0; }
+    .code-line.hl .at  { color: #e8b97a; }
+
+    .code-line.new-add .kw  { color: #90e0a8; }
+    .code-line.new-add .fn  { color: #90e0a8; }
+    .code-line.new-add .str { color: #b8f0c8; }
+    .code-line.new-add .at  { color: #d4f0a0; }
+
+    /* ── Legend ── */
+    .legend {
+      padding: 10px 14px;
+      border-top: 1px solid #2a2d35;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #5c6370;
+      font-family: 'Consolas', 'Courier New', monospace;
+    }
+
+    .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <h1>ToDo App — <code>createElement</code> &amp; <code>remove()</code></h1>
+
+  <div class="lesson-wrap">
+
+    <!-- ══ DEMO PANEL ══ -->
+    <div class="panel-demo">
+      <div class="panel-header">
+        <span class="dot d1"></span>
+        <span class="dot d2"></span>
+        <span class="dot d3"></span>
+        &nbsp;Λίστα Εργασιών
+      </div>
+      <div class="demo-body">
+        <div class="input-row">
+          <input class="task-input" id="taskInput" type="text" placeholder="Νέα εργασία...">
+          <button class="add-btn" id="addBtn">+ Προσθήκη</button>
+        </div>
+        <div class="task-list" id="taskList">
+          <div class="empty-msg" id="emptyMsg">Δεν υπάρχουν εργασίες ακόμα</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CODE PANEL ══ -->
+    <div class="panel-code">
+      <div class="panel-header code-header">
+        &lt;/&gt; &nbsp;HTML — ζωντανή κατάσταση
+      </div>
+      <div class="code-scroll">
+        <pre id="codeBlock"></pre>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#c678dd;"></div>keyword</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#98c379;"></div>string/text</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#d19a66;"></div>attribute</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#27ae60;"></div>νέα προσθήκη</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e74c3c;border-radius:0;"></div>διαγραφή</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4a9eda;border-radius:0;"></div>υπάρχον στοιχείο</div>
+      </div>
+    </div>
+
+  </div><!-- /.lesson-wrap -->
+
+  <script>
+    var tasks      = [];   // Λίστα εργασιών: [{id, text}, ...]
+    var nextId     = 1;    // Μοναδικό ID για κάθε εργασία
+    var lastAction = null; // Τελευταία ενέργεια για το highlight
+
+    /* ─── Δημιουργία γραμμών κώδικα ─── */
+    function buildLines() {
+      var lines = [];
+      var ln = 1;
+
+      function addLine(tokens, cls) {
+        lines.push({ n: ln++, t: tokens, cls: cls || '' });
+      }
+
+      // Άνοιγμα taskList div
+      addLine([['pn','<'],['kw','div '],['at','id='],['str','"taskList"'],['pn','>']]);
+
+      if (tasks.length === 0) {
+        // Κενή λίστα
+        addLine([['pn','  '],['cm','(κενό — δεν υπάρχουν εργασίες)']]);
+      } else {
+        // Μία task-item ανά εργασία
+        tasks.forEach(function(task) {
+          var isNew = lastAction && lastAction.type === 'add' && lastAction.id === task.id;
+          var cls   = isNew ? 'new-add' : 'hl';
+
+          addLine([['pn','  <'],['kw','div '],['at','class='],['str','"task-item"'],['pn','>']], cls);
+          addLine([['pn','    <'],['kw','span'],['pn','>'],['str', task.text],['pn','</'],['kw','span'],['pn','>']], cls);
+          addLine([['pn','    <'],['kw','button '],['at','class='],['str','"delete-btn"'],['pn','>']], cls);
+          addLine([['pn','      Διαγραφή']], cls);
+          addLine([['pn','    </'],['kw','button'],['pn','>']], cls);
+          addLine([['pn','  </'],['kw','div'],['pn','>']], cls);
+        });
+      }
+
+      // Αν μόλις διαγράφηκε κάτι, δείχνουμε σχόλιο
+      if (lastAction && lastAction.type === 'del') {
+        addLine([['pn','  '],['cm','← αφαιρέθηκε: "' + lastAction.text + '"']], 'del-line');
+      }
+
+      // Κλείσιμο taskList div
+      addLine([['pn','</'],['kw','div'],['pn','>']]);
+
+      return lines;
+    }
+
+    /* ─── Εμφάνιση κώδικα στην οθόνη ─── */
+    function renderCode() {
+      var pre   = document.getElementById('codeBlock');
+      var lines = buildLines();
+      pre.innerHTML = '';
+
+      lines.forEach(function(line) {
+        var div  = document.createElement('div');
+        div.className = 'code-line' + (line.cls ? ' ' + line.cls : '');
+
+        var bar  = document.createElement('span'); bar.className  = 'hl-bar';
+        var num  = document.createElement('span'); num.className  = 'line-num';  num.textContent = line.n;
+        var code = document.createElement('span'); code.className = 'line-code';
+
+        line.t.forEach(function(tok) {
+          var s = document.createElement('span');
+          s.className   = tok[0];
+          s.textContent = tok[1];
+          code.appendChild(s);
+        });
+
+        div.appendChild(bar);
+        div.appendChild(num);
+        div.appendChild(code);
+        pre.appendChild(div);
+      });
+
+      // Scroll στο highlighted στοιχείο
+      var target = pre.querySelector('.new-add, .del-line');
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    /* Αρχική εμφάνιση */
+    renderCode();
+
+    /* ─── Προσθήκη Εργασίας ─── */
+    document.getElementById('addBtn').addEventListener('click', function() {
+      var inp  = document.getElementById('taskInput');
+      var text = inp.value.trim();
+
+      if (!text) {
+        inp.focus();
+        return;
+      }
+
+      var id = nextId++;
+      tasks.unshift({ id: id, text: text });
+
+      // Αφαίρεση μηνύματος "κενό"
+      var emptyMsg = document.getElementById('emptyMsg');
+      if (emptyMsg) emptyMsg.remove();
+
+      // Δημιουργία task-item στο DOM
+      var item  = document.createElement('div');
+      item.className    = 'task-item';
+      item.dataset.id   = id;
+
+      var span  = document.createElement('span');
+      span.className    = 'task-text';
+      span.textContent  = text;
+
+      var btn   = document.createElement('button');
+      btn.className     = 'del-btn';
+      btn.textContent   = 'Διαγραφή';
+      btn.addEventListener('click', function() {
+        deleteTask(id, text, item);
+      });
+
+      item.appendChild(span);
+      item.appendChild(btn);
+
+      var list = document.getElementById('taskList');
+      list.insertBefore(item, list.firstChild);
+
+      inp.value = '';
+      inp.focus();
+
+      // Highlight νέας εργασίας
+      lastAction = { type: 'add', id: id };
+      renderCode();
+
+      // Μετά από 1.2s αφαίρεση του green highlight
+      setTimeout(function() {
+        lastAction = null;
+        renderCode();
+      }, 1200);
+    });
+
+    /* Enter για προσθήκη */
+    document.getElementById('taskInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        document.getElementById('addBtn').click();
+      }
+    });
+
+    /* ─── Διαγραφή Εργασίας ─── */
+    function deleteTask(id, text, el) {
+      // Αφαίρεση από τον πίνακα
+      tasks = tasks.filter(function(t) { return t.id !== id; });
+
+      // Highlight διαγραφής
+      lastAction = { type: 'del', text: text };
+      renderCode();
+
+      // Κινούμενη εξαφάνιση του task-item
+      el.style.transition = 'opacity .3s, transform .3s';
+      el.style.opacity    = '0';
+      el.style.transform  = 'translateX(20px)';
+
+      setTimeout(function() {
+        el.remove();
+
+        // Αν η λίστα άδειασε, επαναφορά μηνύματος
+        if (tasks.length === 0) {
+          var msg       = document.createElement('div');
+          msg.className = 'empty-msg';
+          msg.id        = 'emptyMsg';
+          msg.textContent = 'Δεν υπάρχουν εργασίες ακόμα';
+          document.getElementById('taskList').appendChild(msg);
+        }
+
+        // Μετά από 0.8s αφαίρεση του red highlight
+        setTimeout(function() {
+          lastAction = null;
+          renderCode();
+        }, 800);
+
+      }, 300);
+    }
+  </script>
+
+</body>
+</html>
